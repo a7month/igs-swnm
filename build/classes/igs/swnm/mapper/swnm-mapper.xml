@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="igs.swnm.dao.SwnmDao">
+
+	<select id="selectAllAreas" resultType="hashmap">
+	<![CDATA[
+	    select
+		    n.id ,
+		    n.parent_id ,
+            n.type ,
+			n.name ,
+			n.code 
+		from
+			nm_ctg n
+	]]>
+	</select>
+	<select id="selectRootAreas" resultType="hashmap">
+	<![CDATA[
+	    select
+		    n.id ,
+		    n.parent_id ,
+            n.type ,
+			n.name ,
+			n.code 
+		from
+			nm_ctg n
+		where
+			n.parent_id is NULL
+	]]>
+	</select>
+
+	<select id="selectAreasByParentId" parameterType="string"
+		resultType="hashmap">
+	<![CDATA[
+	    select
+		    n.id ,
+		    n.parent_id ,
+            n.type ,
+			n.name ,
+			n.code 
+		from
+			nm_ctg n
+		where
+			n.parent_id = #{parentId}
+	]]>
+	</select>
+
+	<select id="selectAreaById" parameterType="string" resultType="hashmap">
+	<![CDATA[
+	    select
+		    n.id ,
+		    n.parent_id ,
+            n.type ,
+			n.name ,
+			n.code 
+		from
+			nm_ctg n
+		where
+			n.id = #{id}
+	]]>
+	</select>
+
+	<select id="selectChildrenCountByAreaId" parameterType="string"
+		resultType="int">
+	<![CDATA[
+	    select
+	        count(1)
+	    from
+	        nm_ctg n
+	    where
+	        n.parent_id = #{areaId}
+	]]>
+	</select>
+
+	<insert id="insertArea" parameterType="map">
+	<![CDATA[
+	    insert into nm_ctg
+	        (id , parent_id , type , name , code)
+	    values
+	        (#{id} , #{parentid} , #{type} , #{name} , #{code})
+	]]>
+	</insert>
+
+	<update id="updateArea" parameterType="map">
+	<![CDATA[
+	    update 
+	        into nm_ctg
+	    set 
+	        type = #{type},
+	        name = #{name},
+	        code = #{code}
+	    where
+	        id = #{id}
+	]]>
+	</update>
+
+	<delete id="deleteArea">
+	<![CDATA[
+	    delete from 
+	        into nm_ctg
+	    where
+	        id = #{id}
+	]]>
+	</delete>
+
+	<select id="selectAllSwcs" resultType="hashmap">
+	<![CDATA[
+	    select
+		    s.swc_id as id ,
+			s.type as type
+		from
+			hw_swc s
+	]]>
+	</select>
+
+	<select id="selectSwcsByAreaId" parameterType="map" resultType="hashmap">
+	<![CDATA[
+	    select
+	        *
+	    from
+	        v_swc_detail s
+	    where
+	        s.ctg_id = #{areaId}
+	]]>
+		<if test="offset != null">
+			offset #{offset}
+		</if>
+		<if test="limit != null">
+			limit #{limit}
+		</if>
+	</select>
+
+	<select id="selectSwcById" parameterType="string" resultType="hashmap">
+	<![CDATA[
+	    select
+	       *
+	    from
+	        v_swc_detail s
+	    where
+	        s.id = #{swcId}
+	]]>
+	</select>
+
+	<select id="selectRelaysBySwcId" parameterType="string"
+		resultType="hashmap">
+	<![CDATA[
+	     select
+	        *
+	    from
+	        v_rel_detail v
+	    where
+	        v.swc_id = #{swcId}
+	]]>
+	</select>
+
+	<select id="selectRelaysById" parameterType="string" resultType="hashmap">
+	<![CDATA[
+	   select
+	        *
+	    from
+	        v_rel_detail v
+	    where
+	        v.id = #{relaysId}
+	]]>
+	</select>
+
+	<insert id="insertSwc" parameterType="map">
+	<![CDATA[
+	    insert into
+	        hw_swc
+	    values
+	        (#{swcid},#{type})
+	]]>
+	</insert>
+
+	<update id="updateSwc" parameterType="map">
+	<![CDATA[
+	    update into
+	        hw_swc
+	    set
+	        type = #{type}
+	    where
+	        swc_id = #{swcId}
+	]]>
+	</update>
+
+	<delete id="deleteSwcById" parameterType="string">
+	<![CDATA[
+	    delete from 
+	        hw_swc
+	    where
+	        swc_id = #{swcId}
+	]]>
+	</delete>
+
+	<insert id="insertXSwcCtg" parameterType="map">
+	<![CDATA[
+	    insert into
+	        x_swc_ctg
+	        (swc_id,ctg_id,id)
+	    values
+	        (#{swc_id},#{ctg_id},#{id})
+	]]>
+	</insert>
+
+	<delete id="deleteXSwcCtgBySwcId" parameterType="string">
+    <![CDATA[
+        delete from
+            x_swc_ctg
+        where
+            swc_id = #{swcId}
+    ]]>
+	</delete>
+
+	<delete id="deleteXSwcCtgById" parameterType="string">
+    <![CDATA[
+        delete from
+            x_swc_ctg
+        where
+            id = #{id}
+    ]]>
+	</delete>
+
+	<insert id="insertRelays" parameterType="map">
+	<![CDATA[
+        insert into
+            hw_relay
+        values
+            (#{relId},#{swcId},#{relNo},#{type})
+    ]]>
+	</insert>
+
+	<update id="updateRelays" parameterType="map">
+	<![CDATA[
+        update 
+            hw_relay
+        set
+            rel_nm = #{relNm},
+            type = #{type},
+        where
+            rel_id = #{rel_id}
+    ]]>
+	</update>
+
+	<delete id="deleteRelaysById" parameterType="string">
+	 <![CDATA[
+        delte from
+            hw_relay
+        where
+            rel_id = #{relaysId}
+    ]]>
+	</delete>
+
+	<delete id="deleteRelaysBySwcId" parameterType="string">
+	 <![CDATA[
+        delte from
+            hw_relay
+        where
+            swc_id = #{swcId}
+    ]]>
+	</delete>
+
+	<insert id="insertNmSwcBaseBySwcId" parameterType="string">
+    <![CDATA[
+        insert into
+            nm_swc_base
+            (swc_id)
+        values
+            (#{swcId})
+    ]]>
+	</insert>
+
+	<insert id="insertNmRelBaseByRelId" parameterType="map">
+	<![CDATA[
+	     insert into
+	         nm_rel_base
+	         (rel_id,swc_id)
+	     values
+	         (#{rel_id},#{swc_id})
+	]]>
+	</insert>
+
+	<update id="updateXSwcCtg" parameterType="map">
+	<![CDATA[
+	     update
+	         x_swc_ctg
+	     set
+	         ctg_id = #{ctg_id}
+	     where
+	         swc_id = #{swc_id}
+	]]>
+	</update>
+
+	<update id="clearNmSwcBase">
+	<![CDATA[
+	     update
+	         nm_swc_base
+	     set
+	         name = "",
+	         code = ""
+	     where
+	         swc_id = #{swc_id}
+	]]>
+	</update>
+
+</mapper>

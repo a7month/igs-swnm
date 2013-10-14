@@ -1,0 +1,68 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="datasource" />
+		<!--property name="configLocation" value="WEB-INF/spring/mybatis/mybatis-configuration.xml"/ -->
+		<property name="mapperLocations" value="classpath*:igs/swnm/mapper/*.xml" />
+	</bean>
+
+	<bean id="datasource" class="org.postgresql.ds.PGPoolingDataSource">
+		<property name="serverName" value="10.45.7.141" />
+		<property name="databaseName" value="igs"></property>
+		<property name="user" value="igs"></property>
+		<property name="password" value="igs"></property>
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="igs.swnm.dao" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+	</bean>
+
+	<!-- redis configuration -->
+
+	<bean id="jedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+		destroy-method="destroy">
+		<property name="hostName" value="10.45.7.141"></property>
+	</bean>
+
+	<bean id="jedisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory" ref="jedisConnectionFactory"></property>
+		<property name="defaultSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.JacksonJsonRedisSerializer">
+				<constructor-arg index="0" type="java.lang.Class"
+					value="java.util.Map"></constructor-arg>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="swcNewListener" class="igs.swnm.mq.SwcNewListener">
+		<property name="redisTemplate" ref="jedisTemplate"></property>
+	</bean>
+
+	<bean id="topicContainer"
+		class="org.springframework.data.redis.listener.RedisMessageListenerContainer"
+		destroy-method="destroy">
+		<property name="connectionFactory" ref="jedisConnectionFactory" />
+		<property name="taskExecutor">
+			<bean
+				class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
+				<property name="poolSize" value="5"></property>
+			</bean>
+		</property>
+		<property name="messageListeners">
+			<map>
+				<entry key-ref="swcNewListener">
+					<bean class="org.springframework.data.redis.listener.ChannelTopic">
+						<constructor-arg value="q:swc:new" />
+					</bean>
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+</beans>
